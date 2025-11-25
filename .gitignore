@@ -1,0 +1,23 @@
+# Virtual environment
+venv/
+.venv/
+
+# Byte-code files
+__pycache__/
+*.pyc
+*.pyd
+*.pyo
+
+# Environment variables
+.env
+
+# Editor/IDE specific files
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Database files (if any local ones were created)
+*.sqlite3
+*.db
