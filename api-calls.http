@@ -1,0 +1,14 @@
+GET http://localhost:8000/api/v1/rules/123
+
+###
+
+POST http://localhost:8000/api/v1/rules
+Content-Type: application/json
+
+{
+    "user_id": "123",
+    "metric_type": "CPU_USAGE",
+    "threshold_value": 80.0,
+    "condition": "GREATER_THAN",
+    "delivery_channel": "EMAIL"
+}

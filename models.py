@@ -34,7 +34,7 @@ class AlertRuleSchema(BaseModel):
     delivery_channel: DeliveryChannel
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class IngestionData(BaseModel):
     user_id: str
