@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String, Float, Boolean
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from datetime import datetime
 from enum import Enum
 
@@ -26,15 +26,21 @@ class AlertRuleModel(Base):
     is_active = Column(Boolean, default=True)
     delivery_channel = Column(String)
 
-class AlertRuleSchema(BaseModel):
+class AlertRuleBase(BaseModel):
     user_id: str
     metric_type: str
     threshold_value: float
     condition: Condition
     delivery_channel: DeliveryChannel
 
-    class Config:
-        from_attributes = True
+class AlertRuleCreate(AlertRuleBase):
+    pass
+
+class AlertRule(AlertRuleBase):
+    id: int
+    is_active: bool
+
+    model_config = ConfigDict(from_attributes=True)
 
 class IngestionData(BaseModel):
     user_id: str

@@ -2,22 +2,22 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
 
-from models import AlertRuleSchema, AlertRuleModel
+from models import AlertRuleCreate, AlertRule, AlertRuleModel
 from database import get_db
 
 router = APIRouter()
 
 
-@router.post("/api/v1/rules", response_model=AlertRuleSchema)
-def create_rule(rule: AlertRuleSchema, db: Session = Depends(get_db)):
-    db_rule = AlertRuleModel(**rule.dict())
+@router.post("/api/v1/rules", response_model=AlertRule)
+def create_rule(rule: AlertRuleCreate, db: Session = Depends(get_db)):
+    db_rule = AlertRuleModel(**rule.model_dump())
     db.add(db_rule)
     db.commit()
     db.refresh(db_rule)
     return db_rule
 
 
-@router.get("/api/v1/rules/{user_id}", response_model=List[AlertRuleSchema])
+@router.get("/api/v1/rules/{user_id}", response_model=List[AlertRule])
 def get_rules_for_user(user_id: str, db: Session = Depends(get_db)):
     rules = (
         db.query(AlertRuleModel)
