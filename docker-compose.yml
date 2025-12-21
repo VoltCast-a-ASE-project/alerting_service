@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  alerting_service:
+    build: .
+    container_name: alerting_service
+    ports:
+      - "8000:8000"
+    volumes:
+      - sqlite_data:/app/data
+    environment:
+      - DATABASE_URL=sqlite:////app/data/alerting.db
+    restart: unless-stopped
+
+volumes:
+  sqlite_data:
