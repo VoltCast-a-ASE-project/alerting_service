@@ -1,11 +1,10 @@
-version: '3.8'
 
 services:
   alerting_service:
     build: .
     container_name: alerting_service
     ports:
-      - "8000:8000"
+      - "8087:8087"
     volumes:
       - sqlite_data:/app/data
     environment:

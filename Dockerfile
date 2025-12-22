@@ -16,12 +16,12 @@ COPY . .
 # Create a directory for the database (for volume mounting)
 RUN mkdir -p /app/data
 
-# Expose port 8000
-EXPOSE 8000
+# Expose port 8087
+EXPOSE 8087
 
 # Define environment variable for the database URL (default to volume path)
 # Users can override this, but this sets a sensible default to use the /app/data volume
 ENV DATABASE_URL="sqlite:////app/data/alerting.db"
 
 # Run the application
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8087"]
