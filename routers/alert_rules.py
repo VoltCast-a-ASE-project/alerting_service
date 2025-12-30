@@ -8,7 +8,7 @@ from database import get_db
 router = APIRouter()
 
 
-@router.post("/api/v1/rules", response_model=AlertRule)
+@router.post("/alert/api/v1/rules", response_model=AlertRule)
 def create_rule(rule: AlertRuleCreate, db: Session = Depends(get_db)):
     db_rule = AlertRuleModel(**rule.model_dump())
     db.add(db_rule)
@@ -17,7 +17,7 @@ def create_rule(rule: AlertRuleCreate, db: Session = Depends(get_db)):
     return db_rule
 
 
-@router.get("/api/v1/rules/{user_id}", response_model=List[AlertRule])
+@router.get("/alert/api/v1/rules/{user_id}", response_model=List[AlertRule])
 def get_rules_for_user(user_id: str, db: Session = Depends(get_db)):
     rules = (
         db.query(AlertRuleModel)
@@ -27,7 +27,7 @@ def get_rules_for_user(user_id: str, db: Session = Depends(get_db)):
     return rules
 
 
-@router.delete("/api/v1/rules/{rule_id}")
+@router.delete("/alert/api/v1/rules/{rule_id}")
 def delete_rule(rule_id: int, db: Session = Depends(get_db)):
     db_rule = db.query(AlertRuleModel).filter(AlertRuleModel.id == rule_id).first()
     if db_rule is None:
