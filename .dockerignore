@@ -1,0 +1,7 @@
+__pycache__
+venv
+.git
+.github
+.pytest_cache
+*.pyc
+alerting.db

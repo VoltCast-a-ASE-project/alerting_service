@@ -1,8 +1,8 @@
-GET http://localhost:8000/api/v1/rules/245
+GET http://localhost:8087/api/v1/rules/245
 
 ###
 
-POST http://localhost:8000/api/v1/rules
+POST http://localhost:8087/api/v1/rules
 Content-Type: application/json
 
 {
@@ -15,4 +15,4 @@ Content-Type: application/json
 
 ###
 
-DELETE http://localhost:8000/api/v1/rules/1
+DELETE http://localhost:8087/api/v1/rules/1
