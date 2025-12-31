@@ -1,7 +1,7 @@
-
 services:
   alerting_service:
     build: .
+    image: ghcr.io/voltcast-a-ase-project/alerting_service/alert-ms:latest
     container_name: alerting_service
     ports:
       - "8087:8087"
@@ -13,3 +13,7 @@ services:
 
 volumes:
   sqlite_data:
+
+networks:
+  VoltCast_Network:
+    external: true
