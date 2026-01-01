@@ -11,6 +11,8 @@ services:
       - DATABASE_URL=sqlite:////app/data/alerting.db
       - RESEND_API_KEY=${RESEND_API_KEY}
     restart: unless-stopped
+    networks:
+      - VoltCast_Network
 
 volumes:
   sqlite_data:
