@@ -9,6 +9,7 @@ services:
       - sqlite_data:/app/data
     environment:
       - DATABASE_URL=sqlite:////app/data/alerting.db
+      - RESEND_API_KEY=${RESEND_API_KEY}
     restart: unless-stopped
 
 volumes:

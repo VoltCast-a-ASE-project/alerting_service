@@ -44,6 +44,8 @@ jobs:
             type=sha
 
       - name: Build and push Docker images
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
         run: |
           # Build and push each service defined in docker-compose.yml
           docker compose -f ${{ env.COMPOSE_FILE }} build
