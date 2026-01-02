@@ -6,10 +6,10 @@ POST http://localhost:8087/api/v1/rules
 Content-Type: application/json
 
 {
-    "user_id": "123",
-    "metric_type": "CPU_USAGE",
+    "user_id": "homahmoud@edu.aau.at",
+    "metric_type": "battery_capacity",
     "threshold_value": 80.0,
-    "condition": "GREATER_THAN",
+    "condition": "LESS_THAN",
     "delivery_channel": "EMAIL"
 }
 

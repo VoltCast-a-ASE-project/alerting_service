@@ -1,7 +1,8 @@
 import pytest
 from unittest.mock import MagicMock, AsyncMock, patch
 import httpx
-from services.data_poller import fetch_data, poll_data_services
+from services.data_poller import fetch_data, poll_data_services, evaluate_condition, process_inverter_data
+from models import Condition, AlertRuleModel
 
 @pytest.mark.asyncio
 async def test_fetch_data_success():
@@ -65,6 +66,7 @@ async def test_poll_data_services_runs_cycle():
     
     with patch("services.data_poller.httpx.AsyncClient") as mock_client_cls, \
          patch("services.data_poller.fetch_data") as mock_fetch, \
+         patch("services.data_poller.process_inverter_data") as mock_process, \
          patch("asyncio.sleep", side_effect=Exception("StopLoop")) as mock_sleep:
         
         mock_client_instance = AsyncMock()
@@ -77,5 +79,71 @@ async def test_poll_data_services_runs_cycle():
 
         # Verify fetch_data was called twice (once for Kostal, once for Fronius)
         assert mock_fetch.call_count == 2
+        # Verify process_inverter_data was called for each result
+        assert mock_process.call_count == 2
         # Verify sleep was called
         assert mock_sleep.called
+
+def test_evaluate_condition():
+    assert evaluate_condition(10, 5, Condition.GREATER_THAN) is True
+    assert evaluate_condition(5, 10, Condition.GREATER_THAN) is False
+    assert evaluate_condition(5, 10, Condition.LESS_THAN) is True
+    assert evaluate_condition(10, 5, Condition.LESS_THAN) is False
+    assert evaluate_condition(10, 10, Condition.EQUALS) is True
+    assert evaluate_condition(10, 5, Condition.EQUALS) is False
+
+@pytest.mark.asyncio
+async def test_process_inverter_data_triggers_alert():
+    mock_delivery = AsyncMock()
+    mock_db = MagicMock()
+    
+    # Setup mock data from inverter
+    data = {
+        "realtime_data": {
+            "battery_capacity": {"value": 70}
+        }
+    }
+    
+    # Setup mock rule
+    mock_rule = AlertRuleModel(
+        id=1,
+        user_id="test@test.com",
+        metric_type="battery_capacity",
+        threshold_value=80.0,
+        condition=Condition.LESS_THAN,
+        is_active=True
+    )
+    
+    mock_db.query.return_value.filter.return_value.all.return_value = [mock_rule]
+    
+    with patch("services.data_poller.SessionLocal", return_value=mock_db):
+        await process_inverter_data(data, mock_delivery)
+    
+    mock_delivery.send_alert.assert_called_once_with(mock_rule, 70.0)
+
+@pytest.mark.asyncio
+async def test_process_inverter_data_no_alert_if_condition_not_met():
+    mock_delivery = AsyncMock()
+    mock_db = MagicMock()
+    
+    data = {
+        "realtime_data": {
+            "battery_capacity": {"value": 90}
+        }
+    }
+    
+    mock_rule = AlertRuleModel(
+        id=1,
+        user_id="test@test.com",
+        metric_type="battery_capacity",
+        threshold_value=80.0,
+        condition=Condition.LESS_THAN,
+        is_active=True
+    )
+    
+    mock_db.query.return_value.filter.return_value.all.return_value = [mock_rule]
+    
+    with patch("services.data_poller.SessionLocal", return_value=mock_db):
+        await process_inverter_data(data, mock_delivery)
+    
+    mock_delivery.send_alert.assert_not_called()
