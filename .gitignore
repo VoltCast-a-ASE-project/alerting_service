@@ -21,3 +21,6 @@ __pycache__/
 # Database files (if any local ones were created)
 *.sqlite3
 *.db
+
+# Docker secrets
+secrets/*
