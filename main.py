@@ -21,6 +21,6 @@ async def startup_event():
     asyncio.create_task(poll_data_services())
 
 
-@app.get("/")
+@app.get("/alert")
 def read_root():
     return {"message": "Welcome to the VoltCast Notification & Alerting Service"}
