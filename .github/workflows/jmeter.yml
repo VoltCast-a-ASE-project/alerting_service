@@ -1,0 +1,58 @@
+name: JMeter
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  acceptance-test:
+    name: Runs acceptance tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup container
+        run: |
+          docker pull ghcr.io/voltcast-a-ase-project/alerting_service/alert-ms:latest
+          docker run --name alerting_service -p 8087:8087 -d ghcr.io/voltcast-a-ase-project/alerting_service/alert-ms:latest
+          # Wait for the service to be ready (rudimentary check)
+          sleep 10
+      - name: Install Python, Java Runtime and Taurus
+        run: |
+          sudo apt-get update
+          sudo apt-get install python3 default-jre-headless python3-tk python3-pip python3-dev libxml2-dev libxslt-dev zlib1g-dev net-tools
+          python3 -m venv .venv
+          source .venv/bin/activate
+          pip install --upgrade pip
+          pip install bzt
+
+      - name: Run acceptance test
+        run: |
+          source .venv/bin/activate
+          bzt alerting_acceptance_tests.jmx
+
+  performance-test:
+    name: Runs performance tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup container
+        run: |
+          docker pull ghcr.io/voltcast-a-ase-project/alerting_service/alert-ms:latest
+          docker run --name alerting_service -p 8087:8087 -d ghcr.io/voltcast-a-ase-project/alerting_service/alert-ms:latest
+          # Wait for the service to be ready (rudimentary check)
+          sleep 10
+      - name: Install Python, Java Runtime and Taurus
+        run: |
+          sudo apt-get update
+          sudo apt-get install python3 default-jre-headless python3-tk python3-pip python3-dev libxml2-dev libxslt-dev zlib1g-dev net-tools
+          python3 -m venv .venv
+          source .venv/bin/activate
+          pip install --upgrade pip
+          pip install bzt
+
+      - name: Run performance test
+        run: |
+          source .venv/bin/activate
+          bzt alerting_performance_tests.jmx
