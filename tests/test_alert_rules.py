@@ -2,7 +2,7 @@ from models import Condition, DeliveryChannel
 
 def test_create_rule(client):
     response = client.post(
-        "/api/v1/rules",
+        "/alert/api/v1/rules",
         json={
             "user_id": "user1",
             "metric_type": "temperature",
@@ -21,7 +21,7 @@ def test_create_rule(client):
 def test_get_rules_for_user(client):
     # Create a rule first
     client.post(
-        "/api/v1/rules",
+        "/alert/api/v1/rules",
         json={
             "user_id": "user1",
             "metric_type": "temperature",
@@ -31,7 +31,7 @@ def test_get_rules_for_user(client):
         }
     )
     
-    response = client.get("/api/v1/rules/user1")
+    response = client.get("/alert/api/v1/rules/user1")
     assert response.status_code == 200
     data = response.json()
     assert len(data) == 1
@@ -40,7 +40,7 @@ def test_get_rules_for_user(client):
 def test_delete_rule(client):
     # Create a rule first
     create_response = client.post(
-        "/api/v1/rules",
+        "/alert/api/v1/rules",
         json={
             "user_id": "user1",
             "metric_type": "temperature",
@@ -52,11 +52,11 @@ def test_delete_rule(client):
     rule_id = create_response.json()["id"]
     
     # Delete the rule
-    delete_response = client.delete(f"/api/v1/rules/{rule_id}")
+    delete_response = client.delete(f"/alert/api/v1/rules/{rule_id}")
     assert delete_response.status_code == 200
     assert delete_response.json() == {"message": "Rule deactivated"}
     
     # Verify it's not returned in get_rules
-    get_response = client.get("/api/v1/rules/user1")
+    get_response = client.get("/alert/api/v1/rules/user1")
     assert get_response.status_code == 200
     assert len(get_response.json()) == 0

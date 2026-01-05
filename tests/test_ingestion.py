@@ -4,7 +4,7 @@ from models import Condition
 def test_ingest_data_triggers_alert(client):
     # Create a rule
     client.post(
-        "/api/v1/rules",
+        "/alert/api/v1/rules",
         json={
             "user_id": "user1",
             "metric_type": "temperature",
@@ -17,7 +17,7 @@ def test_ingest_data_triggers_alert(client):
     # We need to patch the method on the instance that is already created in routers.ingestion
     with patch("routers.ingestion.alert_delivery_service.send_alert", new_callable=AsyncMock) as mock_send_alert:
         response = client.post(
-            "/api/v1/data/ingest",
+            "/alert/api/v1/data/ingest",
             json={
                 "user_id": "user1",
                 "metric_type": "temperature",
@@ -40,7 +40,7 @@ def test_ingest_data_triggers_alert(client):
 def test_ingest_data_no_alert(client):
     # Create a rule
     client.post(
-        "/api/v1/rules",
+        "/alert/api/v1/rules",
         json={
             "user_id": "user1",
             "metric_type": "temperature",
@@ -52,7 +52,7 @@ def test_ingest_data_no_alert(client):
     
     with patch("routers.ingestion.alert_delivery_service.send_alert", new_callable=AsyncMock) as mock_send_alert:
         response = client.post(
-            "/api/v1/data/ingest",
+            "/alert/api/v1/data/ingest",
             json={
                 "user_id": "user1",
                 "metric_type": "temperature",

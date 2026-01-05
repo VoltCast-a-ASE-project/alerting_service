@@ -9,7 +9,7 @@ router = APIRouter()
 alert_delivery_service = AlertDeliveryService()
 
 
-@router.post("/api/v1/data/ingest")
+@router.post("/alert/api/v1/data/ingest")
 async def ingest_data(
     data: IngestionData,
     background_tasks: BackgroundTasks,
