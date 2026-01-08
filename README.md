@@ -2,72 +2,105 @@
 
 This service is a Python-based microservice designed for the VoltCast system. It provides a standalone solution for managing user-defined alert rules and triggering notifications when incoming data breaches those rules.
 
-The service is built with FastAPI for high performance, SQLAlchemy for ORM, and Pydantic for data validation. It uses a PostgreSQL database for data persistence.
+The service is built with **FastAPI** for high performance, **SQLAlchemy** for ORM, and **Pydantic** for data validation. It uses a **SQLite** database for easy local development and persistence (configured via Docker volume). It also integrates with **Resend** for sending email notifications.
+
+## Features
+
+*   **Rule Management**: Create, list, and delete alert rules via API.
+*   **Real-time Polling**: Automatically polls Kostal and Fronius services for real-time data.
+*   **Alerting**: Triggers email alerts via Resend when thresholds are breached.
+*   **Data Ingestion**: Manual data ingestion endpoint for testing and simulation.
 
 ## Setup
 
-Follow these steps to set up and run the service locally.
+You can run the service using Docker (recommended) or locally with Python.
 
-### 1. Prerequisites
-- Python 3.11+
-- A running PostgreSQL database instance.
+### Prerequisites
 
-### 2. Clone the Repository
-```bash
-git clone <your-repository-url>
-cd alerting_service
-```
+*   **Docker** & **Docker Compose** (Recommended)
+*   **Python 3.10+** (If running locally)
+*   **Resend API Key**: Required for sending email alerts. [Get one here](https://resend.com).
 
-### 3. Create a Virtual Environment
-It's recommended to use a virtual environment to manage dependencies.
+### Configuration (`.env`)
 
-```bash
-# For Windows
-python -m venv venv
-venv\Scripts\activate
+Whether running with Docker or locally, you can configure the service using environment variables. Create a `.env` file in the root directory (or use the one provided in `docker-compose.yml` environment section):
 
-# For macOS/Linux
-python3 -m venv venv
-source venv/bin/activate
-```
+| Variable | Description | Default |
+| :--- | :--- | :--- |
+| `RESEND_API_KEY` | **Required**. Your Resend API Key for emails. | None |
+| `DATABASE_URL` | Database connection string. | `sqlite:////app/data/alerting.db` (Docker) |
+| `KOSTAL_SERVICE_URL` | URL to poll Kostal data from. | `http://kostal-ms:8082/kostal/realtimedata` |
+| `FRONIUS_SERVICE_URL` | URL to poll Fronius data from. | `http://fronius-ms:8081/fronius/realtimedata` |
 
-### 4. Install Dependencies
-Install the required Python packages using the `requirements.txt` file.
+---
 
-```bash
-pip install -r requirements.txt
-```
+### Option 1: Running with Docker (Recommended)
 
-### 5. Configure Database
-The service connects to PostgreSQL using a database URL. You must set the `DATABASE_URL` environment variable before running the application.
+The easiest way to run the service is using Docker Compose.
 
-Create a `.env` file in the root of the project directory:
+1.  **Configure Environment**:
+    Open `docker-compose.yml` and ensure your `RESEND_API_KEY` is set (or pass it from your shell).
 
-```
-DATABASE_URL="postgresql://user:password@hostname:port/database_name"
-```
+2.  **Build and Run**:
+    ```bash
+    docker-compose up --build
+    ```
 
-Replace `user`, `password`, `hostname`, `port`, and `database_name` with your actual PostgreSQL connection details. The application will automatically load this variable.
+The service will start on port **8087**.
+*   **API URL**: `http://localhost:8087`
+*   **Docs**: `http://localhost:8087/docs`
 
-## Running the Service
+### Option 2: Running Locally
 
-Once the setup is complete, you can run the FastAPI application using `uvicorn`. The application will automatically create the necessary `alert_rules` table in your database on startup.
+1.  **Clone the Repository**:
+    ```bash
+    git clone <your-repository-url>
+    cd alerting_service
+    ```
 
-```bash
-uvicorn main:app --reload
-```
-- `--reload`: Enables auto-reloading, which is useful for development. The server will restart automatically after code changes.
+2.  **Create Virtual Environment**:
+    ```bash
+    python -m venv venv
+    
+    # Windows
+    venv\Scripts\activate
+    
+    # macOS/Linux
+    source venv/bin/activate
+    ```
 
-The service will be available at `http://127.0.0.1:8000`.
+3.  **Install Dependencies**:
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+4.  **Set Environment Variables**:
+    Create a `.env` file or export them in your shell:
+    ```bash
+    # Windows (PowerShell)
+    $env:RESEND_API_KEY="your_api_key"
+    
+    # macOS/Linux
+    export RESEND_API_KEY="your_api_key"
+    ```
+
+5.  **Run the Service**:
+    ```bash
+    uvicorn main:app --reload --port 8087
+    ```
+
+Access the service at `http://127.0.0.1:8087`.
+
+---
 
 ## API Endpoints
 
-You can access the interactive API documentation (Swagger UI) by navigating to `http://127.0.0.1:8000/docs`.
+Interactive API documentation is available at `/docs`.
 
 ### Alert Rule Management
 
 *   **Create a new rule**
-    *   **Endpoint:** `POST /api/v1/rules`
+    *   **Endpoint:** `POST /alert/api/v1/rules`
     *   **Body:**
         ```json
         {
@@ -81,17 +114,15 @@ You can access the interactive API documentation (Swagger UI) by navigating to `
         ```
 
 *   **Retrieve all active rules for a user**
-    *   **Endpoint:** `GET /api/v1/rules/{user_id}`
+    *   **Endpoint:** `GET /alert/api/v1/rules/{user_id}`
 
 *   **Deactivate/delete a rule**
-    *   **Endpoint:** `DELETE /api/v1/rules/{rule_id}`
+    *   **Endpoint:** `DELETE /alert/api/v1/rules/{rule_id}`
 
-
-### Data Ingestion
+### Data Ingestion (Manual)
 
 *   **Ingest new data for evaluation**
-    *   **Endpoint:** `POST /api/v1/data/ingest`
-    *   **Description:** This endpoint asynchronously evaluates incoming data against all active rules for the specified user and metric. If a rule's condition is met, a mock alert is logged to the console.
+    *   **Endpoint:** `POST /alert/api/v1/data/ingest`
     *   **Body:**
         ```json
         {
@@ -101,7 +132,8 @@ You can access the interactive API documentation (Swagger UI) by navigating to `
           "timestamp": "2025-11-24T10:00:00Z"
         }
         ```
-    *   **Example Log Output (on violation):**
-        ```
-        [ALERT TRIGGERED for User user-123]: PV_PRODUCTION (1100.0) violated rule (Condition: GREATER_THAN 1000.5) via Channel: EMAIL
-        ```
+
+### Health Check
+
+*   **Check service status**
+    *   **Endpoint:** `GET /alert/hello`
